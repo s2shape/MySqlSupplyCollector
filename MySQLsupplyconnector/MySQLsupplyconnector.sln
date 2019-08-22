@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLsupplyconnector", "MySQLsupplyconnector\MySQLsupplyconnector.csproj", "{6918B130-6523-46B9-9E9E-86DA86B61103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlsupplyconnector", "MySQLsupplyconnector\MySqlsupplyconnector.csproj", "{6918B130-6523-46B9-9E9E-86DA86B61103}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySQLSupplyCollectorTests", "MySQLSupplyCollectorTests\MySQLSupplyCollectorTests.csproj", "{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlSupplyCollectorTests", "MySQLSupplyCollectorTests\MySqlSupplyCollectorTests.csproj", "{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

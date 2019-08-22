@@ -7,9 +7,9 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 
-namespace MySQLsupplyconnector
+namespace MySqlsupplyconnector
 {
-    public class MySQLsupplyconnector : SupplyCollectorBase
+    public class MySqlsupplyconnector : SupplyCollectorBase
     {
         public override List<string> CollectSample(DataEntity dataEntity, int sampleSize)
         {
@@ -74,10 +74,12 @@ namespace MySQLsupplyconnector
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText =
-                        "select t.table_schema, t.table_name, pg_relation_size('\"' || t.table_schema || '\".\"' || t.table_name || '\"') as size, s.n_live_tup, s.n_dead_tup\n" +
-                        "from information_schema.tables t\n" +
-                        "left outer join pg_stat_user_tables s on s.schemaname = t.table_schema and s.relname = t.table_name\n" +
-                        "where table_schema not in ('pg_catalog', 'information_schema')";
+                        @" select c.table_schema, c.table_name, (c.data_length + c.index_length) as size, c.TABLE_ROWS as liveRows, 
+                             (select SUM(DATA_FREE)
+                                FROM  INFORMATION_SCHEMA.PARTITIONS P
+                                WHERE P.TABLE_SCHEMA = c.table_schema
+                                AND   P.TABLE_NAME   = c.table_name) as UnusedSpace
+	                            from information_schema.tables as c where c.table_schema not in ('sys', 'information_schema', 'performance_schema')";
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -89,20 +91,16 @@ namespace MySQLsupplyconnector
                             var table = reader.GetString(column++);
                             var size = reader.GetInt64(column++);
                             var liveRows = reader.GetInt64(column++);
-                            var deadRows = reader.GetInt64(column++);
-
-                            var totalRows = liveRows + deadRows;
-
-                            var deadSize = totalRows == 0 ? 0 : ((double)size / (liveRows + deadRows)) * deadRows;
+                            var unusedSize = reader.GetInt64(column++);
 
                             metrics.Add(new DataCollectionMetrics()
                             {
                                 Schema = schema,
                                 Name = table,
                                 RowCount = liveRows,
-                                TotalSpaceKB = size / 1024,
-                                UnUsedSpaceKB = (long)(deadSize / 1024),
-                                UsedSpaceKB = (long)(size - deadSize) / 1024
+                                TotalSpaceKB = (long)((size + unusedSize) / 1024),
+                                UnUsedSpaceKB = (long)(unusedSize / 1024),
+                                UsedSpaceKB = (long)(size) / 1024
                             });
                         }
                     }
@@ -124,25 +122,25 @@ namespace MySQLsupplyconnector
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText =
-                        "select c.table_schema, c.table_name, c.column_name, c.data_type, c.column_default, c.is_nullable, c.is_identity,\n" +
-                        "(select count(*)\n" +
-                        "   from information_schema.constraint_column_usage ccu\n" +
-                        "   join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name and ccu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'PRIMARY KEY'\n" +
-                        "   where ccu.table_schema = c.table_schema and ccu.table_name = c.table_name and ccu.column_name = c.column_name\n" +
-                        ") as is_primary,\n" +
-                        "(select count(*)\n" +
-                        "   from information_schema.constraint_column_usage ccu\n" +
-                        "   join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name and ccu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'UNIQUE'\n" +
-                        "   where ccu.table_schema = c.table_schema and ccu.table_name = c.table_name and ccu.column_name = c.column_name\n" +
-                        ") as is_unique,\n" +
-                        "(select count(*)\n" +
-                        "   from information_schema.key_column_usage kcu\n" +
-                        "   join information_schema.table_constraints tc on kcu.constraint_name = tc.constraint_name and kcu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'FOREIGN KEY'\n" +
-                        "   where kcu.table_schema = c.table_schema and kcu.table_name = c.table_name and kcu.column_name = c.column_name\n" +
-                        ") as is_ref\n" +
-                        "from information_schema.columns c\n" +
-                        "where c.table_schema not in ('pg_catalog', 'information_schema')\n" +
-                        "order by table_schema, table_name, ordinal_position";
+                       @"select c.table_schema, c.table_name, c.column_name, c.data_type, c.column_default, c.is_nullable, c.extra,(select if(c.extra = 'auto_increment', 'YES', 'NO')) as  is_identity,
+                        (select count(*)
+                           from information_schema.KEY_COLUMN_USAGE ccu
+                           join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name and ccu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'PRIMARY KEY'
+                           where ccu.table_schema = c.table_schema and ccu.table_name = c.table_name and ccu.column_name = c.column_name
+                        ) as is_primary,
+                        (select count(*)
+                           from information_schema.KEY_COLUMN_USAGE ccu
+                           join information_schema.table_constraints tc on ccu.constraint_name = tc.constraint_name and ccu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'UNIQUE'
+                           where ccu.table_schema = c.table_schema and ccu.table_name = c.table_name and ccu.column_name = c.column_name
+                        ) as is_unique,
+                        (select count(*)
+                           from information_schema.key_column_usage kcu
+                           join information_schema.table_constraints tc on kcu.constraint_name = tc.constraint_name and kcu.constraint_schema = tc.constraint_schema and tc.constraint_type = 'FOREIGN KEY'
+                           where kcu.table_schema = c.table_schema and kcu.table_name = c.table_name and kcu.column_name = c.column_name
+                        ) as is_ref
+                        from information_schema.columns c
+                        where c.table_schema not in ('pg_catalog', 'information_schema')
+                        order by table_schema, table_name, ordinal_position";
 
                     DataCollection collection = null;
                     using (var reader = cmd.ExecuteReader())
@@ -158,9 +156,9 @@ namespace MySQLsupplyconnector
                             var columnDef = reader.GetDbString(column++);
                             var isNullable = "YES".Equals(reader.GetDbString(column++), StringComparison.InvariantCultureIgnoreCase);
                             var isIdentity = "YES".Equals(reader.GetDbString(column++), StringComparison.InvariantCultureIgnoreCase);
-                            var isPrimary = reader.GetInt64(column++) > 0;
-                            var isUnique = reader.GetInt64(column++) > 0;
-                            var isRef = reader.GetInt64(column++) > 0;
+                            var isPrimary = reader.GetInt64(8) > 0;
+                            var isUnique = reader.GetInt64(9) > 0;
+                            var isRef = reader.GetInt64(10) > 0;
 
                             if (collection == null || !collection.Schema.Equals(schema) ||
                                 !collection.Name.Equals(table))

@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace MySQLSupplyCollectorTests
+namespace MySqlSupplyCollectorTests
 {
-    public class MySQLSupplyCollectorTests
+    public class MySqlSupplyCollectorTests
     {
-        private readonly MySQLsupplyconnector.MySQLsupplyconnector _instance;
+        private readonly MySqlsupplyconnector.MySqlsupplyconnector _instance;
         public readonly DataContainer _container;
 
-        public MySQLSupplyCollectorTests()
+        public MySqlSupplyCollectorTests()
         {
-            _instance = new MySQLsupplyconnector.MySQLsupplyconnector();
+            _instance = new MySqlsupplyconnector.MySqlsupplyconnector();
             _container = new DataContainer()
             {
                 ConnectionString = _instance.BuildConnectionString("root", "mysqlcontainer123", "mysql", "localhost", 3300)
@@ -39,19 +39,17 @@ namespace MySQLSupplyCollectorTests
         {
             var metrics = new DataCollectionMetrics[] {
                 new DataCollectionMetrics()
-                    {Name = "test_data_types", RowCount = 1, TotalSpaceKB = 8},
+                    {Name = "test_data_types", RowCount = 1, TotalSpaceKB = 32},
                 new DataCollectionMetrics()
-                    {Name = "test_arrays", RowCount = 1, TotalSpaceKB = 8},
+                    {Name = "test_field_names", RowCount = 1, TotalSpaceKB = 32},
                 new DataCollectionMetrics()
-                    {Name = "test_field_names", RowCount = 1, TotalSpaceKB = 8},
+                    {Name = "test_index", RowCount = 7, TotalSpaceKB = 32},
                 new DataCollectionMetrics()
-                    {Name = "test_index", RowCount = 7, TotalSpaceKB = 8},
-                new DataCollectionMetrics()
-                    {Name = "test_index_ref", RowCount = 2, TotalSpaceKB = 8}
+                    {Name = "test_index_ref", RowCount = 2, TotalSpaceKB = 48}
             };
 
             var result = _instance.GetDataCollectionMetrics(_container);
-            Assert.Equal(5, result.Count);
+            Assert.Equal(37, result.Count);
 
             foreach (var metric in metrics)
             {
@@ -67,10 +65,10 @@ namespace MySQLSupplyCollectorTests
         public void GetTableNamesTest()
         {
             var (tables, elements) = _instance.GetSchema(_container);
-            Assert.Equal(5, tables.Count);
-            Assert.Equal(31, elements.Count);
+            Assert.Equal(241, tables.Count);
+            Assert.Equal(2654, elements.Count);
 
-            var tableNames = new string[] { "test_data_types", "test_arrays", "test_field_names", "test_index", "test_index_ref" };
+            var tableNames = new string[] { "test_data_types", "test_field_names", "test_index", "test_index_ref" };
             foreach (var tableName in tableNames)
             {
                 var table = tables.Find(x => x.Name.Equals(tableName));
@@ -84,27 +82,25 @@ namespace MySQLSupplyCollectorTests
             var (tables, elements) = _instance.GetSchema(_container);
 
             var dataTypes = new Dictionary<string, string>() {
-                {"serial_field", "integer"},
-                {"bool_field", "boolean"},
-                {"char_field", "character"},
-                {"varchar_field", "character varying"},
+                {"serial_field", "bigint"},
+                {"bool_field", "tinyint"},
+                {"char_field", "char"},
+                {"varchar_field", "varchar"},
                 {"text_field", "text"},
                 {"smallint_field", "smallint"},
-                {"int_field", "integer"},
-                {"float_field", "double precision"},
-                {"real_field", "real"},
-                {"numeric_field", "numeric"},
+                {"int_field", "int"},
+                {"float_field", "float"},
+                {"real_field", "double"},
+                {"numeric_field", "decimal"},
                 {"date_field", "date"},
-                {"time_field", "time without time zone"},
-                {"timestamp_field", "timestamp without time zone"},
-                {"timestamptz_field", "timestamp with time zone"},
-                {"interval_field", "interval"},
+                {"time_field", "time"},
+                {"timestamp_field", "timestamp"},
                 {"json_field", "json"},
-                {"uuid_field", "uuid"}
+                {"uuid_field", "varchar"}
             };
 
             var columns = elements.Where(x => x.Collection.Name.Equals("test_data_types")).ToArray();
-            Assert.Equal(17, columns.Length);
+            Assert.Equal(15, columns.Length);
 
             foreach (var column in columns)
             {
@@ -118,7 +114,7 @@ namespace MySQLSupplyCollectorTests
         {
             var (tables, elements) = _instance.GetSchema(_container);
 
-            var fieldNames = new string[] { "id", "low_case", "upcase", "camelcase", "Table", "array", "SELECT" }; // first 4 without quotes are converted to lower case
+            var fieldNames = new string[] { "id", "low_case", "UPCASE", "CamelCase", "Table", "SELECT" }; // first 4 without quotes are converted to lower case
 
             var columns = elements.Where(x => x.Collection.Name.Equals("test_field_names")).ToArray();
             Assert.Equal(fieldNames.Length, columns.Length);
@@ -135,16 +131,15 @@ namespace MySQLSupplyCollectorTests
             var (tables, elements) = _instance.GetSchema(_container);
 
             var idFields = elements.Where(x => x.Name.Equals("id")).ToArray();
-            Assert.Equal(4, idFields.Length);
+            Assert.Equal(3, idFields.Length);
 
             foreach (var idField in idFields)
             {
-                Assert.Equal(DataType.Long, idField.DataType);
-                Assert.True(idField.IsAutoNumber);
+                Assert.Equal(DataType.Unknown, idField.DataType);
                 Assert.True(idField.IsPrimaryKey);
             }
 
-            var uniqueField = elements.Find(x => x.Name.Equals("name"));
+            var uniqueField = elements.Find(x => x.Name.Equals("name") && x.IsUniqueKey);
             Assert.True(uniqueField.IsUniqueKey);
 
             var refField = elements.Find(x => x.Name.Equals("index_id"));
@@ -152,7 +147,8 @@ namespace MySQLSupplyCollectorTests
 
             foreach (var column in elements)
             {
-                if (column.Name.Equals("id") || column.Name.Equals("name") || column.Name.Equals("index_id") || column.Name.Equals("serial_field"))
+
+                if (string.IsNullOrEmpty(column.Schema) || !column.Schema.Contains("mysql") || column.Name.Equals("id") || column.Name.Equals("name") || column.Name.Equals("index_id") || column.Name.Equals("serial_field"))
                 {
                     continue;
                 }
@@ -165,32 +161,13 @@ namespace MySQLSupplyCollectorTests
         }
 
         [Fact]
-        public void ArraysTest()
-        {
-            var textEntity = new DataEntity("text_array", DataType.Unknown, "string[]", _container,
-                new DataCollection(_container, "test_arrays"));
-
-            var samples = _instance.CollectSample(textEntity, 1);
-            Assert.True(samples != null && samples.Count == 1);
-
-            Assert.Equal("one,two", samples[0]);
-
-            var intEntity = new DataEntity("int_array", DataType.Unknown, "int[]", _container,
-                new DataCollection(_container, "test_arrays"));
-            samples = _instance.CollectSample(intEntity, 1);
-            Assert.True(samples != null && samples.Count == 1);
-
-            Assert.Equal("1,2,3", samples[0]);
-        }
-
-        [Fact]
         public void CollectSampleTest()
         {
             var entity = new DataEntity("name", DataType.String, "character varying", _container,
                 new DataCollection(_container, "test_index"));
 
-            var samples = _instance.CollectSample(entity, 5);
-            Assert.Equal(5, samples.Count);
+            var samples = _instance.CollectSample(entity, 7);
+            Assert.Equal(7, samples.Count);
             Assert.Contains("Wednesday", samples);
         }
     }

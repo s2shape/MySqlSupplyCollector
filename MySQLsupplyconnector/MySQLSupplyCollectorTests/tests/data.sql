@@ -37,7 +37,7 @@ values(0,0,0,0,0);
 
 
 create table test_index (
-   id serial NOT NULL PRIMARY KEY,
+   id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name varchar(100) NOT NULL UNIQUE
 );
 
@@ -61,7 +61,9 @@ values('Saturday');
 
 create table test_index_ref (
    id serial PRIMARY KEY,
-   index_id integer REFERENCES test_index(id)
+   index_id int,
+   FOREIGN KEY fk_ref(index_id	)
+ REFERENCES test_index(id)
 );
 
 insert into test_index_ref(index_id)

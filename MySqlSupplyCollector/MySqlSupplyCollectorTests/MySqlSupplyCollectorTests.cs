@@ -66,7 +66,7 @@ namespace MySqlSupplyCollectorTests
         {
             var (tables, elements) = _instance.GetSchema(_container);
             Assert.Equal(241, tables.Count);
-            Assert.Equal(2654, elements.Count);
+            Assert.Equal(2657, elements.Count);
 
             var tableNames = new string[] { "test_data_types", "test_field_names", "test_index", "test_index_ref" };
             foreach (var tableName in tableNames)
@@ -83,6 +83,9 @@ namespace MySqlSupplyCollectorTests
 
             var dataTypes = new Dictionary<string, string>() {
                 {"serial_field", "bigint"},
+                {"tinyint_field", "tinyint"},
+                {"mediumint_field", "mediumint"},
+                {"bigint_field", "bigint"},
                 {"bool_field", "tinyint"},
                 {"char_field", "char"},
                 {"varchar_field", "varchar"},
@@ -100,7 +103,7 @@ namespace MySqlSupplyCollectorTests
             };
 
             var columns = elements.Where(x => x.Collection.Name.Equals("test_data_types")).ToArray();
-            Assert.Equal(15, columns.Length);
+            Assert.Equal(dataTypes.Count, columns.Length);
 
             foreach (var column in columns)
             {

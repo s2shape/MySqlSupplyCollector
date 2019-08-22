@@ -1,5 +1,8 @@
 create table test_data_types (
    serial_field serial PRIMARY KEY,
+   tinyint_field tinyint,
+   mediumint_field mediumint,
+   bigint_field bigint,
    bool_field boolean,
    char_field char(40),
    varchar_field varchar(100),
@@ -17,8 +20,8 @@ create table test_data_types (
 );
 
 
-insert into test_data_types(bool_field, char_field, varchar_field, text_field, smallint_field, int_field, float_field, real_field, numeric_field, date_field, time_field, timestamp_field, json_field)
-values(True, 'char!', 'varchar!', 'text!', 1, 299792458, 6.626, 1.280649, 6.02214076, '2019-08-13', '17:40:00', '2019-08-13 17:40:00', '{"field":"value"}');
+insert into test_data_types(tinyint_field,mediumint_field,bigint_field, bool_field, char_field, varchar_field, text_field, smallint_field, int_field, float_field, real_field, numeric_field, date_field, time_field, timestamp_field, json_field)
+values(1,1,1,True, 'char!', 'varchar!', 'text!', 1, 299792458, 6.626, 1.280649, 6.02214076, '2019-08-13', '17:40:00', '2019-08-13 17:40:00', '{"field":"value"}');
 
 
 

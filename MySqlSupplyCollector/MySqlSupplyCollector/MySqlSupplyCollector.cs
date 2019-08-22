@@ -29,19 +29,6 @@ namespace MySqlSupplyCollector
                             {
                                 result.Add(null);
                             }
-                            else if (val.GetType().IsArray)
-                            {
-                                var arr = (Array)val;
-                                var sb = new StringBuilder();
-                                for (int i = 0; i < arr.Length; i++)
-                                {
-                                    if (sb.Length > 0)
-                                        sb.Append(",");
-                                    sb.Append(arr.GetValue(i).ToString())
-;
-                                }
-                                result.Add(sb.ToString());
-                            }
                             else
                             {
                                 result.Add(val.ToString());
@@ -51,7 +38,7 @@ namespace MySqlSupplyCollector
                 }
             }
 
-            return result;
+            return result.Take(sampleSize).ToList();
         }
 
         public override List<string> DataStoreTypes()

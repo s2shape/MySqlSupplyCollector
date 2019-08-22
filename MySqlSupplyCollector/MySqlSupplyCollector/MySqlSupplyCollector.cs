@@ -7,9 +7,9 @@ using System.Data.Common;
 using System.Linq;
 using System.Text;
 
-namespace MySqlsupplyconnector
+namespace MySqlSupplyCollector
 {
-    public class MySqlsupplyconnector : SupplyCollectorBase
+    public class MySqlSupplyCollector : SupplyCollectorBase
     {
         public override List<string> CollectSample(DataEntity dataEntity, int sampleSize)
         {

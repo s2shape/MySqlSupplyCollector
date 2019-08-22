@@ -8,12 +8,12 @@ namespace MySqlSupplyCollectorTests
 {
     public class MySqlSupplyCollectorTests
     {
-        private readonly MySqlsupplyconnector.MySqlsupplyconnector _instance;
+        private readonly MySqlSupplyCollector.MySqlSupplyCollector _instance;
         public readonly DataContainer _container;
 
         public MySqlSupplyCollectorTests()
         {
-            _instance = new MySqlsupplyconnector.MySqlsupplyconnector();
+            _instance = new MySqlSupplyCollector.MySqlSupplyCollector();
             _container = new DataContainer()
             {
                 ConnectionString = _instance.BuildConnectionString("root", "mysqlcontainer123", "mysql", "localhost", 3300)

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MySqlsupplyconnector\MySqlsupplyconnector.csproj" />
+    <ProjectReference Include="..\MySqlSupplyCollector\MySqlSupplyCollector.csproj" />
   </ItemGroup>
 
 </Project>

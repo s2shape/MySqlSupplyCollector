@@ -53,7 +53,7 @@ namespace MySqlSupplyCollectorTests
 
             foreach (var metric in metrics)
             {
-                var resultMetric = result.Find(x => x.Name.Equals(metric.Name));
+                var resultMetric = result.First<DataCollectionMetrics>(x => x.Name.Equals(metric.Name));
                 Assert.NotNull(resultMetric);
 
                 Assert.Equal(metric.RowCount, resultMetric.RowCount);

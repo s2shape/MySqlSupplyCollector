@@ -1,11 +1,10 @@
-﻿using MySql.Data.MySqlClient;
-using S2.BlackSwan.SupplyCollector;
-using S2.BlackSwan.SupplyCollector.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using System.Text;
+using MySql.Data.MySqlClient;
+using S2.BlackSwan.SupplyCollector;
+using S2.BlackSwan.SupplyCollector.Models;
 
 namespace MySqlSupplyCollector
 {
@@ -19,7 +18,7 @@ namespace MySqlSupplyCollector
                 conn.Open();
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} LIMIT {sampleSize}";
+                    cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} ORDER BY RAND() LIMIT {sampleSize}";
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -43,7 +42,7 @@ namespace MySqlSupplyCollector
 
         public override List<string> DataStoreTypes()
         {
-            return (new[] { "MySQL" }).ToList();
+            return (new[] { "MySql" }).ToList();
         }
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3300)

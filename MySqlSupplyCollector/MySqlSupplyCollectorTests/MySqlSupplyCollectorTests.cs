@@ -1,8 +1,7 @@
-using S2.BlackSwan.SupplyCollector.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
+using S2.BlackSwan.SupplyCollector.Models;
 
 namespace MySqlSupplyCollectorTests
 {
@@ -24,7 +23,7 @@ namespace MySqlSupplyCollectorTests
         public void DataStoreTypesTest()
         {
             var result = _instance.DataStoreTypes();
-            Assert.Contains("MySQL", result);
+            Assert.Contains("MySql", result);
         }
 
         [Fact]

@@ -42,7 +42,7 @@ namespace MySqlSupplyCollector
 
         public override List<string> DataStoreTypes()
         {
-            return (new[] { "MySql" }).ToList();
+            return (new[] { "MySQL" }).ToList();
         }
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3300)

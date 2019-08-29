@@ -16,9 +16,29 @@ namespace MySqlSupplyCollector
             using (var conn = new MySqlConnection(dataEntity.Container.ConnectionString))
             {
                 conn.Open();
+
+                long rows = 0;
+                using (var cmd = conn.CreateCommand()) {
+                    cmd.CommandText =
+                        $"SELECT COUNT(*) FROM {dataEntity.Collection.Name}";
+
+                    rows = (long) cmd.ExecuteScalar();
+                }
+
+
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} ORDER BY RAND() LIMIT {sampleSize}";
+                    string sampling = "";
+                    if (rows > 0)
+                    {
+                        double pct = 0.05 + (double)sampleSize / rows;
+                        if (pct >= 1)
+                            pct = 0.999;
+
+                        sampling = $"WHERE RAND() < {pct}".Replace(",", ".");
+                    }
+
+                    cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} {sampling} LIMIT {sampleSize}";
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -42,7 +62,7 @@ namespace MySqlSupplyCollector
 
         public override List<string> DataStoreTypes()
         {
-            return (new[] { "MySQL" }).ToList();
+            return (new[] { "MySql" }).ToList();
         }
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3300)

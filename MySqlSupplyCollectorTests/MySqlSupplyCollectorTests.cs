@@ -20,7 +20,7 @@ namespace MySqlSupplyCollectorTests
                     Environment.GetEnvironmentVariable("MYSQL_USER"),
                     Environment.GetEnvironmentVariable("MYSQL_ROOT_PASSWORD"),
                     Environment.GetEnvironmentVariable("MYSQL_DATABASE"),
-                    Environment.GetEnvironmentVariable("MYSQL_USER"),
+                    Environment.GetEnvironmentVariable("MYSQL_HOST"),
                     Int32.Parse(Environment.GetEnvironmentVariable("MYSQL_PORT") ?? "3306")
                     )
             };

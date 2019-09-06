@@ -6,7 +6,7 @@ stages:
 
 variables:
   MYSQL_HOST: mysql
-  MYSQL_PORT: 3306
+  MYSQL_PORT: "3306"
   MYSQL_DATABASE: test
   MYSQL_USER: root
   MYSQL_ROOT_PASSWORD: root
@@ -26,6 +26,8 @@ test:
 
   script:
     - apt-get update && apt-get install -y mysql-client
-    - mysql --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --password=$MYSQL_ROOT_PASSWORD --database=$MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql 
+    - echo "SELECT 'Started';" | mysql --user=$MYSQL_USER --password="${MYSQL_ROOT_PASSWORD}" --host=$MYSQL_HOST "${MYSQL_DATABASE}"
+    - mysql --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --password=$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql 
+    - echo "show tables;" | mysql --user=$MYSQL_USER --password="${MYSQL_ROOT_PASSWORD}" --host=$MYSQL_HOST "${MYSQL_DATABASE}"
     - dotnet build
     - dotnet test

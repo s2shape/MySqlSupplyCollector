@@ -10,13 +10,21 @@ namespace MySqlSupplyCollector
 {
     public class MySqlSupplyCollector : SupplyCollectorBase
     {
+        private MySqlConnection Connect(string connectString) {
+            var conn = new MySqlConnection(connectString);
+            conn.Open();
+
+            using (var cmd = new MySqlCommand("set net_write_timeout=99999; set net_read_timeout=99999", conn)) {
+                cmd.ExecuteNonQuery();
+            }
+
+            return conn;
+        }
+
         public override List<string> CollectSample(DataEntity dataEntity, int sampleSize)
         {
             var result = new List<string>();
-            using (var conn = new MySqlConnection(dataEntity.Container.ConnectionString))
-            {
-                conn.Open();
-
+            using (var conn = Connect(dataEntity.Container.ConnectionString)) {
                 long rows = 0;
                 using (var cmd = conn.CreateCommand()) {
                     cmd.CommandText =
@@ -67,16 +75,14 @@ namespace MySqlSupplyCollector
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3306)
         {
-           return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database}";
+           return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database};Connection Timeout=300";
         }
 
         public override List<DataCollectionMetrics> GetDataCollectionMetrics(DataContainer container)
         {
             var metrics = new List<DataCollectionMetrics>();
-            using (var conn = new MySqlConnection(container.ConnectionString))
+            using (var conn = Connect(container.ConnectionString))
             {
-                conn.Open();
-
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText =
@@ -121,10 +127,8 @@ namespace MySqlSupplyCollector
             var collections = new List<DataCollection>();
             var entities = new List<DataEntity>();
 
-            using (var conn = new MySqlConnection(container.ConnectionString))
+            using (var conn = Connect(container.ConnectionString))
             {
-                conn.Open();
-
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.CommandText =
@@ -198,9 +202,9 @@ namespace MySqlSupplyCollector
         {
             try
             {
-                using (var conn = new MySqlConnection(container.ConnectionString))
+                using (Connect(container.ConnectionString))
                 {
-                    conn.Open();
+                    // nothing
                 }
 
                 return true;

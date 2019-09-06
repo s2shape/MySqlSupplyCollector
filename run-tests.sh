@@ -6,7 +6,7 @@ export MYSQL_PORT=3306
 export MYSQL_ROOT_PASSWORD=mysqlcontainer123
 
 docker run --name mysql-database -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_DATABASE=$MYSQL_DATABASE -d mysql:latest
-sleep 20
+sleep 60
 docker exec -i mysql-database mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql
 sleep 20
 dotnet test

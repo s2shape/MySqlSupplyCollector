@@ -55,8 +55,6 @@ namespace MySqlSupplyCollectorTests
             };
 
             var result = _instance.GetDataCollectionMetrics(_container);
-            Assert.Equal(37, result.Count);
-
             foreach (var metric in metrics)
             {
                 var resultMetric = result.First<DataCollectionMetrics>(x => x.Name.Equals(metric.Name));

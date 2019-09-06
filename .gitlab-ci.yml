@@ -21,8 +21,11 @@ build:
 
 test:
   stage: test
+
   services:
-    - mysql:5.7
+    - name: mysql:latest
+      alias: mysql
+      command: [ mysqld, --default-authentication-plugin=mysql_native_password, --skip-mysqlx]
 
   script:
     - apt-get update && apt-get install -y mysql-client

@@ -65,7 +65,7 @@ namespace MySqlSupplyCollector
             return (new[] { "MySql" }).ToList();
         }
 
-        public string BuildConnectionString(string user, string password, string database, string host, int port = 3300)
+        public string BuildConnectionString(string user, string password, string database, string host, int port = 3306)
         {
            return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database}";
         }

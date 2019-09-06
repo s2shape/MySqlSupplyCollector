@@ -1,0 +1,31 @@
+image: microsoft/dotnet:latest
+
+stages:
+  - build
+  - test
+
+variables:
+  MYSQL_HOST: mysql
+  MYSQL_PORT: 3306
+  MYSQL_DATABASE: test
+  MYSQL_USER: root
+  MYSQL_ROOT_PASSWORD: root
+
+before_script:
+  - dotnet restore
+
+build:
+  stage: build
+  script:
+    - dotnet build
+
+test:
+  stage: test
+  services:
+    - mysql
+
+  script:
+    - apt-get update && apt-get install -y mysql-client
+    - mysql --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --password=$MYSQL_ROOT_PASSWORD --database=$MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql 
+    - dotnet build
+    - dotnet test

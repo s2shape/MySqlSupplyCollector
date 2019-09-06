@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -15,7 +16,13 @@ namespace MySqlSupplyCollectorTests
             _instance = new MySqlSupplyCollector.MySqlSupplyCollector();
             _container = new DataContainer()
             {
-                ConnectionString = _instance.BuildConnectionString("root", "mysqlcontainer123", "mysql", "localhost", 3300)
+                ConnectionString = _instance.BuildConnectionString(
+                    Environment.GetEnvironmentVariable("MYSQL_USER"),
+                    Environment.GetEnvironmentVariable("MYSQL_ROOT_PASSWORD"),
+                    Environment.GetEnvironmentVariable("MYSQL_DATABASE"),
+                    Environment.GetEnvironmentVariable("MYSQL_USER"),
+                    Int32.Parse(Environment.GetEnvironmentVariable("MYSQL_PORT") ?? "3306")
+                    )
             };
         }
 

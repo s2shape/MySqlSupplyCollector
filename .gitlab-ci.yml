@@ -22,7 +22,7 @@ build:
 test:
   stage: test
   services:
-    - mysql
+    - mysql:5.7
 
   script:
     - apt-get update && apt-get install -y mysql-client

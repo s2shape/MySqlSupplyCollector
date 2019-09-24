@@ -47,7 +47,7 @@ namespace MySqlSupplyCollectorLoader
                 var sb = new StringBuilder();
                 sb.Append("CREATE TABLE ");
                 sb.Append(dataEntities[0].Collection.Name);
-                sb.Append("\n");
+                sb.Append(" (\n");
                 sb.Append("id_field serial PRIMARY KEY");
 
                 foreach (var dataEntity in dataEntities)
@@ -77,6 +77,8 @@ namespace MySqlSupplyCollectorLoader
                             sb.Append("integer");
                             break;
                     }
+
+                    sb.AppendLine();
                 }
 
                 sb.Append(");");
@@ -87,92 +89,88 @@ namespace MySqlSupplyCollectorLoader
                     cmd.ExecuteNonQuery();
                 }
 
-                sb = new StringBuilder();
-                sb.Append("INSERT INTO ");
-                sb.Append(dataEntities[0].Collection.Name);
-                sb.Append("(");
+                var r = new Random();
+                long rows = 0;
+                while (rows < count) {
+                    long bulkSize = 10000;
+                    if (bulkSize + rows > count)
+                        bulkSize = count - rows;
 
-                bool first = true;
-                foreach (var dataEntity in dataEntities)
-                {
-                    if (!first)
-                    {
-                        sb.Append(", ");
-                    }
-                    sb.Append(dataEntity.Name);
-                    first = false;
-                }
-                sb.Append(") VALUES (");
+                    sb = new StringBuilder();
+                    sb.Append("INSERT INTO ");
+                    sb.Append(dataEntities[0].Collection.Name);
+                    sb.Append("(");
 
-                first = true;
-                foreach (var dataEntity in dataEntities)
-                {
-                    if (!first)
-                    {
-                        sb.Append(", ");
-                    }
-
-                    sb.Append("@");
-                    sb.Append(dataEntity.Name);
-                    first = false;
-                }
-
-                sb.Append(");");
-
-                using (var cmd = conn.CreateCommand())
-                {
-                    cmd.CommandText = sb.ToString();
+                    bool first = true;
                     foreach (var dataEntity in dataEntities)
                     {
-                        cmd.Parameters.Add(new MySqlParameter($"@{dataEntity.Name}", ConvertDbType(dataEntity.DataType)));
-                    }
-                    long rows = 0;
-
-                    var r = new Random();
-
-                    while (rows < count)
-                    {
-                        foreach (var dataEntity in dataEntities)
+                        if (!first)
                         {
-                            object val;
+                            sb.Append(", ");
+                        }
+                        sb.Append(dataEntity.Name);
+                        first = false;
+                    }
+                    sb.Append(") VALUES ");
+
+                    for (int i = 0; i < bulkSize; i++) {
+                        if (i > 0)
+                            sb.Append(", ");
+
+                        sb.Append("(");
+                        first = true;
+                        foreach (var dataEntity in dataEntities) {
+                            if (!first) {
+                                sb.Append(", ");
+                            }
 
                             switch (dataEntity.DataType)
                             {
                                 case DataType.String:
-                                    val = new Guid().ToString();
+                                    sb.Append("'");
+                                    sb.Append(new Guid().ToString());
+                                    sb.Append("'");
                                     break;
                                 case DataType.Int:
-                                    val = r.Next();
+                                    sb.Append(r.Next().ToString());
                                     break;
                                 case DataType.Double:
-                                    val = r.NextDouble();
+                                    sb.Append(r.NextDouble().ToString().Replace(",", "."));
                                     break;
                                 case DataType.Boolean:
-                                    val = r.Next(100) > 50;
+                                    sb.Append(r.Next(100) > 50 ? "true" : "false");
                                     break;
                                 case DataType.DateTime:
-                                    val = DateTimeOffset
+                                    var val = DateTimeOffset
                                         .FromUnixTimeMilliseconds(
                                             DateTimeOffset.Now.ToUnixTimeMilliseconds() + r.Next()).DateTime;
+                                    sb.Append("'");
+                                    sb.Append(val.ToString("s"));
+                                    sb.Append("'");
                                     break;
                                 default:
-                                    val = r.Next();
+                                    sb.Append(r.Next().ToString());
                                     break;
                             }
 
-                            cmd.Parameters[$"@{dataEntity.Name}"].Value = val;
+                            first = false;
                         }
 
-                        if (rows % 1000 == 0)
-                        {
-                            Console.Write(".");
-                        }
-
-                        cmd.ExecuteNonQuery();
-
-                        rows++;
+                        sb.Append(")");
                     }
+
+                    sb.Append(";");
+
+                    using (var cmd = conn.CreateCommand()) {
+                        cmd.CommandText = sb.ToString();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    rows += bulkSize;
+                    Console.Write(".");
                 }
+
+                Console.WriteLine();
             }
         }
 

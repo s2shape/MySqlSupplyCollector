@@ -18,4 +18,10 @@
     <ProjectReference Include="..\MySqlSupplyCollector\MySqlSupplyCollector.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="test_harness.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

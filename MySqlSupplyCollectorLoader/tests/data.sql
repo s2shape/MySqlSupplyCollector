@@ -37,8 +37,6 @@ create table test_field_names (
 insert into test_field_names(low_case, upcase, camelcase, `Table`, `SELECT`)
 values(0,0,0,0,0);
 
-
-
 create table test_index (
    id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
    name varchar(100) NOT NULL UNIQUE
@@ -46,20 +44,24 @@ create table test_index (
 
 insert into test_index(name)
 values('Sunday');
+
 insert into test_index(name)
 values('Monday');
+
 insert into test_index(name)
 values('Tuesday');
+
 insert into test_index(name)
 values('Wednesday');
+
 insert into test_index(name)
 values('Thursday');
+
 insert into test_index(name)
 values('Friday');
+
 insert into test_index(name)
 values('Saturday');
-
-
 
 
 create table test_index_ref (
@@ -71,5 +73,6 @@ create table test_index_ref (
 
 insert into test_index_ref(index_id)
 values(1);
+
 insert into test_index_ref(index_id)
 values(5);

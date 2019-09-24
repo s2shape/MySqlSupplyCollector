@@ -1,4 +1,4 @@
-image: microsoft/dotnet:latest
+image: itsplus/s2shape-test-harness
 
 stages:
   - build
@@ -12,7 +12,7 @@ variables:
   MYSQL_ROOT_PASSWORD: root
 
 before_script:
-  - dotnet restore
+  - dotnet restore -s https://www.myget.org/F/s2/ -s https://api.nuget.org/v3/index.json
 
 build:
   stage: build
@@ -27,9 +27,30 @@ test:
       alias: mysql
 
   script:
-    - apt-get update && apt-get install -y mysql-client
-    - echo "SELECT 'Started';" | mysql --user=$MYSQL_USER --password="${MYSQL_ROOT_PASSWORD}" --host=$MYSQL_HOST "${MYSQL_DATABASE}"
-    - mysql --host=$MYSQL_HOST --port=$MYSQL_PORT --user=$MYSQL_USER --password=$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql 
-    - echo "show tables;" | mysql --user=$MYSQL_USER --password="${MYSQL_ROOT_PASSWORD}" --host=$MYSQL_HOST "${MYSQL_DATABASE}"
+    - ROOT_PROJECT_PATH=$(pwd)
     - dotnet build
+    - dotnet publish
+    - cd $ROOT_PROJECT_PATH/MySqlSupplyCollectorLoader/bin/Debug/netcoreapp2.2/publish
+    - cp -f /SupplyCollectorDataLoader/SupplyCollectorDataLoader/bin/Debug/netcoreapp2.2/SupplyCollectorDataLoader.runtimeconfig.json .
+    - dotnet SupplyCollectorDataLoader.dll -init MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - dotnet SupplyCollectorDataLoader.dll -xunit MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - cd $ROOT_PROJECT_PATH
     - dotnet test
+
+load_test:
+  stage: test
+  services:
+    - name: mysql:5.7.27
+      alias: mysql
+
+  script:
+    - ROOT_PROJECT_PATH=$(pwd)
+    - dotnet build
+    - dotnet publish
+    - cd $ROOT_PROJECT_PATH/MySqlSupplyCollectorLoader/bin/Debug/netcoreapp2.2/publish
+    - cp -f /SupplyCollectorDataLoader/SupplyCollectorDataLoader/bin/Debug/netcoreapp2.2/SupplyCollectorDataLoader.runtimeconfig.json .
+    - dotnet SupplyCollectorDataLoader.dll -init MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - dotnet SupplyCollectorDataLoader.dll -xunit MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - dotnet SupplyCollectorDataLoader.dll -samples MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300" TestCollection Test1:int,Test2:string,Test3:bool,Test4:double,Test5 1000000
+    - cd $ROOT_PROJECT_PATH/MySqlSupplyCollectorTests/bin/Debug/netcoreapp2.2/publish
+    - SupplyCollectorTestHarness

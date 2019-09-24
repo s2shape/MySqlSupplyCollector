@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29201.188
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlSupplyCollector", "MySqlSupplyCollector\MySqlSupplyCollector.csproj", "{6918B130-6523-46B9-9E9E-86DA86B61103}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MySqlSupplyCollectorTests", "MySqlSupplyCollectorTests\MySqlSupplyCollectorTests.csproj", "{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySqlSupplyCollectorLoader", "MySqlSupplyCollectorLoader\MySqlSupplyCollectorLoader.csproj", "{3DC80145-A9D3-444C-B1EE-F32366042560}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{14B172AE-66E0-4D02-B845-D4FC9DA17BEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DC80145-A9D3-444C-B1EE-F32366042560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DC80145-A9D3-444C-B1EE-F32366042560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DC80145-A9D3-444C-B1EE-F32366042560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DC80145-A9D3-444C-B1EE-F32366042560}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

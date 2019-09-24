@@ -5,7 +5,8 @@ A supply collector designed to connect to MySQL
 Run `dotnet build`
 
 ## Tests
-Run `./run-tests.sh`
+* Run `./run-tests.sh` or
+* Install gitlab-runner from https://docs.gitlab.com/runner/install/ and run `gitlab-runner exec docker test`
 
-## Known issues
-- "Connection timed out" error if using with MySQL 5.7
+## Load tests
+* Install gitlab-runner and run `gitlab-runner exec docker load_test`

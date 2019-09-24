@@ -7,8 +7,10 @@ export MYSQL_ROOT_PASSWORD=mysqlcontainer123
 
 docker run --name mysql-database -p 3306:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_DATABASE=$MYSQL_DATABASE -d mysql:5.7.27
 sleep 60
-docker exec -i mysql-database mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < MySqlSupplyCollectorTests/tests/data.sql
-sleep 20
+dotnet restore -s https://www.myget.org/F/s2/ -s https://api.nuget.org/v3/index.json
+dotnet build
+docker exec -i mysql-database mysql -u$MYSQL_USER -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < MySqlSupplyCollectorLoader/tests/data.sql
+sleep 10
 dotnet test
 docker stop mysql-database
 docker rm mysql-database

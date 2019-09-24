@@ -23,6 +23,25 @@ test:
   stage: test
 
   services:
+    - name: mysql:latest
+      alias: mysql
+      command: [ mysqld, --default-authentication-plugin=mysql_native_password, --skip-mysqlx]
+
+  script:
+    - ROOT_PROJECT_PATH=$(pwd)
+    - dotnet build
+    - dotnet publish
+    - cd $ROOT_PROJECT_PATH/MySqlSupplyCollectorLoader/bin/Debug/netcoreapp2.2/publish
+    - cp -f /SupplyCollectorDataLoader/SupplyCollectorDataLoader/bin/Debug/netcoreapp2.2/SupplyCollectorDataLoader.runtimeconfig.json .
+    - dotnet SupplyCollectorDataLoader.dll -init MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - dotnet SupplyCollectorDataLoader.dll -xunit MySqlSupplyCollector "server=$MYSQL_HOST;Port=$MYSQL_PORT;uid=$MYSQL_USER;pwd=$MYSQL_ROOT_PASSWORD;database=$MYSQL_DATABASE;Connection Timeout=300"
+    - cd $ROOT_PROJECT_PATH
+    - dotnet test
+
+test5.7:
+  stage: test
+
+  services:
     - name: mysql:5.7.27
       alias: mysql
 
@@ -40,8 +59,9 @@ test:
 load_test:
   stage: test
   services:
-    - name: mysql:5.7.27
+    - name: mysql:latest
       alias: mysql
+      command: [ mysqld, --default-authentication-plugin=mysql_native_password, --skip-mysqlx]
 
   script:
     - ROOT_PROJECT_PATH=$(pwd)

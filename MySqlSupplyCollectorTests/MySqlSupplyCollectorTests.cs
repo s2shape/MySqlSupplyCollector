@@ -69,8 +69,8 @@ namespace MySqlSupplyCollectorTests
         public void GetTableNamesTest()
         {
             var (tables, elements) = _instance.GetSchema(_container);
-            Assert.Equal(241, tables.Count);
-            Assert.Equal(2657, elements.Count);
+            Assert.Equal(223, tables.Count);
+            Assert.Equal(2499, elements.Count);
 
             var tableNames = new string[] { "test_data_types", "test_field_names", "test_index", "test_index_ref" };
             foreach (var tableName in tableNames)

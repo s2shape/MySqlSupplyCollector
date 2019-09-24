@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.17" />
+    <PackageReference Include="MySql.Data" Version="6.10.9" />
     <PackageReference Include="S2.SupplyCollector" Version="1.1.1" />
   </ItemGroup>
 

@@ -13,10 +13,11 @@ namespace MySqlSupplyCollector
         private MySqlConnection Connect(string connectString) {
             var conn = new MySqlConnection(connectString);
             conn.Open();
+            /*conn.Open();
 
             using (var cmd = new MySqlCommand("set net_write_timeout=99999; set net_read_timeout=99999", conn)) {
                 cmd.ExecuteNonQuery();
-            }
+            }*/
 
             return conn;
         }
@@ -27,6 +28,7 @@ namespace MySqlSupplyCollector
             using (var conn = Connect(dataEntity.Container.ConnectionString)) {
                 long rows = 0;
                 using (var cmd = conn.CreateCommand()) {
+                    cmd.CommandTimeout = 600;
                     cmd.CommandText =
                         $"SELECT COUNT(*) FROM {dataEntity.Collection.Name}";
 
@@ -46,6 +48,7 @@ namespace MySqlSupplyCollector
                         sampling = $"WHERE RAND() < {pct}".Replace(",", ".");
                     }
 
+                    cmd.CommandTimeout = 600;
                     cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} {sampling} LIMIT {sampleSize}";
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -85,6 +88,7 @@ namespace MySqlSupplyCollector
             {
                 using (var cmd = conn.CreateCommand())
                 {
+                    cmd.CommandTimeout = 600;
                     cmd.CommandText =
                         @" select c.table_schema, c.table_name, (c.data_length + c.index_length) as size, c.TABLE_ROWS as liveRows, 
                              (select SUM(DATA_FREE)
@@ -131,6 +135,7 @@ namespace MySqlSupplyCollector
             {
                 using (var cmd = conn.CreateCommand())
                 {
+                    cmd.CommandTimeout = 600;
                     cmd.CommandText =
                        @"select c.table_schema, c.table_name, c.column_name, c.data_type, c.column_default, c.is_nullable, c.extra,(select if(c.extra = 'auto_increment', 'YES', 'NO')) as  is_identity,
                         (select count(*)

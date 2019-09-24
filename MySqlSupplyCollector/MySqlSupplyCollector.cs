@@ -41,7 +41,7 @@ namespace MySqlSupplyCollector
                     string sampling = "";
                     if (rows > 0)
                     {
-                        double pct = 0.05 + (double)sampleSize / rows;
+                        double pct = 0.2 + (double)sampleSize / rows;
                         if (pct >= 1)
                             pct = 0.999;
 

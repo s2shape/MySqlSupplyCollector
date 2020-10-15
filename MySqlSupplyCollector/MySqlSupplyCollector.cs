@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Net;
 using MySql.Data.MySqlClient;
 using S2.BlackSwan.SupplyCollector;
 using S2.BlackSwan.SupplyCollector.Models;
@@ -10,7 +11,8 @@ namespace MySqlSupplyCollector
 {
     public class MySqlSupplyCollector : SupplyCollectorBase
     {
-        private MySqlConnection Connect(string connectString) {
+        private MySqlConnection Connect(string connectString)
+        {
             var conn = new MySqlConnection(connectString);
             conn.Open();
             /*conn.Open();
@@ -25,14 +27,16 @@ namespace MySqlSupplyCollector
         public override List<string> CollectSample(DataEntity dataEntity, int sampleSize)
         {
             var result = new List<string>();
-            using (var conn = Connect(dataEntity.Container.ConnectionString)) {
+            using (var conn = Connect(dataEntity.Container.ConnectionString))
+            {
                 long rows = 0;
-                using (var cmd = conn.CreateCommand()) {
+                using (var cmd = conn.CreateCommand())
+                {
                     cmd.CommandTimeout = 600;
                     cmd.CommandText =
                         $"SELECT COUNT(*) FROM {dataEntity.Collection.Name}";
 
-                    rows = (long) cmd.ExecuteScalar();
+                    rows = (long)cmd.ExecuteScalar();
                 }
 
 
@@ -78,7 +82,7 @@ namespace MySqlSupplyCollector
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3306)
         {
-           return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database};Connection Timeout=300";
+            return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database};Connection Timeout=300";
         }
 
         public override List<DataCollectionMetrics> GetDataCollectionMetrics(DataContainer container)
@@ -101,13 +105,23 @@ namespace MySqlSupplyCollector
                     {
                         while (reader.Read())
                         {
-                            int column = 0;
-
-                            var schema = reader.GetString(column++);
-                            var table = reader.GetString(column++);
-                            var size = reader.GetInt64(column++);
-                            var liveRows = reader.GetInt64(column++);
-                            var unusedSize = reader.GetInt64(column++);
+                            var schema = reader.GetString(0);
+                            var table = reader.GetString(1);
+                            long size = 0;
+                            if (!reader.IsDBNull(2))
+                            {
+                                size = reader.GetInt64(2);
+                            }
+                            long liveRows = 0;
+                            if (!reader.IsDBNull(3))
+                            {
+                                liveRows = reader.GetInt64(3);
+                            }
+                            long unusedSize = 0;
+                            if (!reader.IsDBNull(4))
+                            {
+                                unusedSize = reader.GetInt64(4);
+                            }
 
                             metrics.Add(new DataCollectionMetrics()
                             {

@@ -53,6 +53,7 @@ namespace MySqlSupplyCollector
                     }
 
                     cmd.CommandTimeout = 600;
+                    //
                     cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} {sampling} LIMIT {sampleSize}";
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -99,7 +100,7 @@ namespace MySqlSupplyCollector
                                 FROM  INFORMATION_SCHEMA.PARTITIONS P
                                 WHERE P.TABLE_SCHEMA = c.table_schema
                                 AND   P.TABLE_NAME   = c.table_name) as UnusedSpace
-	                            from information_schema.tables as c where c.table_schema not in ('sys', 'information_schema', 'performance_schema')";
+	                            from information_schema.tables as c where c.table_schema = """ + conn.Database + "\""; /*not in ('sys', 'information_schema', 'performance_schema')";*/
 
                     using (var reader = cmd.ExecuteReader())
                     {

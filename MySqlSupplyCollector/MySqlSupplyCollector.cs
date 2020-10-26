@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Net;
 using MySql.Data.MySqlClient;
 using S2.BlackSwan.SupplyCollector;
 using S2.BlackSwan.SupplyCollector.Models;
@@ -10,7 +11,8 @@ namespace MySqlSupplyCollector
 {
     public class MySqlSupplyCollector : SupplyCollectorBase
     {
-        private MySqlConnection Connect(string connectString) {
+        private MySqlConnection Connect(string connectString)
+        {
             var conn = new MySqlConnection(connectString);
             conn.Open();
             /*conn.Open();
@@ -25,14 +27,16 @@ namespace MySqlSupplyCollector
         public override List<string> CollectSample(DataEntity dataEntity, int sampleSize)
         {
             var result = new List<string>();
-            using (var conn = Connect(dataEntity.Container.ConnectionString)) {
+            using (var conn = Connect(dataEntity.Container.ConnectionString))
+            {
                 long rows = 0;
-                using (var cmd = conn.CreateCommand()) {
+                using (var cmd = conn.CreateCommand())
+                {
                     cmd.CommandTimeout = 600;
                     cmd.CommandText =
                         $"SELECT COUNT(*) FROM {dataEntity.Collection.Name}";
 
-                    rows = (long) cmd.ExecuteScalar();
+                    rows = (long)cmd.ExecuteScalar();
                 }
 
 
@@ -49,6 +53,7 @@ namespace MySqlSupplyCollector
                     }
 
                     cmd.CommandTimeout = 600;
+                    //
                     cmd.CommandText = $"SELECT {dataEntity.Name} FROM {dataEntity.Collection.Name} {sampling} LIMIT {sampleSize}";
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -78,7 +83,7 @@ namespace MySqlSupplyCollector
 
         public string BuildConnectionString(string user, string password, string database, string host, int port = 3306)
         {
-           return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database};Connection Timeout=300";
+            return $"server={host}; Port={port}; uid={user}; pwd={password}; database={database};Connection Timeout=300";
         }
 
         public override List<DataCollectionMetrics> GetDataCollectionMetrics(DataContainer container)
@@ -95,19 +100,29 @@ namespace MySqlSupplyCollector
                                 FROM  INFORMATION_SCHEMA.PARTITIONS P
                                 WHERE P.TABLE_SCHEMA = c.table_schema
                                 AND   P.TABLE_NAME   = c.table_name) as UnusedSpace
-	                            from information_schema.tables as c where c.table_schema not in ('sys', 'information_schema', 'performance_schema')";
+	                            from information_schema.tables as c where c.table_schema = """ + conn.Database + "\""; /*not in ('sys', 'information_schema', 'performance_schema')";*/
 
                     using (var reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            int column = 0;
-
-                            var schema = reader.GetString(column++);
-                            var table = reader.GetString(column++);
-                            var size = reader.GetInt64(column++);
-                            var liveRows = reader.GetInt64(column++);
-                            var unusedSize = reader.GetInt64(column++);
+                            var schema = reader.GetString(0);
+                            var table = reader.GetString(1);
+                            long size = 0;
+                            if (!reader.IsDBNull(2))
+                            {
+                                size = reader.GetInt64(2);
+                            }
+                            long liveRows = 0;
+                            if (!reader.IsDBNull(3))
+                            {
+                                liveRows = reader.GetInt64(3);
+                            }
+                            long unusedSize = 0;
+                            if (!reader.IsDBNull(4))
+                            {
+                                unusedSize = reader.GetInt64(4);
+                            }
 
                             metrics.Add(new DataCollectionMetrics()
                             {
@@ -154,8 +169,8 @@ namespace MySqlSupplyCollector
                            where kcu.table_schema = c.table_schema and kcu.table_name = c.table_name and kcu.column_name = c.column_name
                         ) as is_ref
                         from information_schema.columns c
-                        where c.table_schema not in ('pg_catalog', 'information_schema')
-                        order by table_schema, table_name, ordinal_position";
+                        where c.table_schema  = """ + conn.Database + "\""/*not in ('pg_catalog', 'information_schema')*/ +
+                        "order by table_schema, table_name, ordinal_position";
 
                     DataCollection collection = null;
                     using (var reader = cmd.ExecuteReader())

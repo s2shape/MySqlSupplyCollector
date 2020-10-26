@@ -169,8 +169,8 @@ namespace MySqlSupplyCollector
                            where kcu.table_schema = c.table_schema and kcu.table_name = c.table_name and kcu.column_name = c.column_name
                         ) as is_ref
                         from information_schema.columns c
-                        where c.table_schema not in ('pg_catalog', 'information_schema')
-                        order by table_schema, table_name, ordinal_position";
+                        where c.table_schema  = """ + conn.Database + "\""/*not in ('pg_catalog', 'information_schema')*/ +
+                        "order by table_schema, table_name, ordinal_position";
 
                     DataCollection collection = null;
                     using (var reader = cmd.ExecuteReader())

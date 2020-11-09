@@ -237,72 +237,44 @@ namespace MySqlSupplyCollector
 
         private DataType ConvertDataType(string dbDataType)
         {
-            if ("integer".Equals(dbDataType))
+            switch(dbDataType)
             {
-                return DataType.Long;
+                case "bigint":
+                case "integer":
+                case "int":
+                    return DataType.Long;
+                case "smallint":
+                case "tinyint":
+                    return DataType.Short;
+                case "boolean":
+                case "bool":
+                case "bit":
+                    return DataType.Boolean;
+                case "char":
+                    return DataType.Char;
+                case "varchar":
+                case "longtext":
+                case "mediumtext":
+                case "text":
+                case "json":
+                    return DataType.String;
+                case "double":
+                case "real":
+                    return DataType.Double;
+                case "decimal":
+                case "numeric":
+                    return DataType.Decimal;
+                case "date":
+                case "datetime":
+                    return DataType.DateTime;
+                case "uuid":
+                    return DataType.Guid;
+                case "longblob":
+                case "binary":
+                    return DataType.ByteArray;
+                default:
+                    return DataType.Unknown;
             }
-            else if ("smallint".Equals(dbDataType))
-            {
-                return DataType.Short;
-            }
-            else if ("boolean".Equals(dbDataType))
-            {
-                return DataType.Boolean;
-            }
-            else if ("character".Equals(dbDataType))
-            {
-                return DataType.Char;
-            }
-            else if ("character varying".Equals(dbDataType))
-            {
-                return DataType.String;
-            }
-            else if ("text".Equals(dbDataType))
-            {
-                return DataType.String;
-            }
-            else if ("double precision".Equals(dbDataType))
-            {
-                return DataType.Double;
-            }
-            else if ("real".Equals(dbDataType))
-            {
-                return DataType.Double;
-            }
-            else if ("numeric".Equals(dbDataType))
-            {
-                return DataType.Decimal;
-            }
-            else if ("date".Equals(dbDataType))
-            {
-                return DataType.DateTime;
-            }
-            else if ("time without time zone".Equals(dbDataType))
-            {
-                return DataType.DateTime;
-            }
-            else if ("time with time zone".Equals(dbDataType))
-            {
-                return DataType.DateTime;
-            }
-            else if ("timestamp without time zone".Equals(dbDataType))
-            {
-                return DataType.DateTime;
-            }
-            else if ("timestamp with time zone".Equals(dbDataType))
-            {
-                return DataType.DateTime;
-            }
-            else if ("json".Equals(dbDataType))
-            {
-                return DataType.String;
-            }
-            else if ("uuid".Equals(dbDataType))
-            {
-                return DataType.Guid;
-            }
-
-            return DataType.Unknown;
         }
     }
 

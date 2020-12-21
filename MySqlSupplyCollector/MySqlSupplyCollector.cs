@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Net;
@@ -218,6 +219,7 @@ namespace MySqlSupplyCollector
             return (collections, entities);
         }
 
+
         public override bool TestConnection(DataContainer container)
         {
             try
@@ -234,6 +236,34 @@ namespace MySqlSupplyCollector
                 return false;
             }
         }
+
+        #region SpeedScanner Support
+        public override long? CountAllEntities(DataCollection collection)
+        {
+            using (var conn = Connect(collection.Container.ConnectionString))
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandTimeout = 600;
+                cmd.CommandText = $"select count(*) from {collection.Schema}.{collection.Name} ";
+                return (long)cmd.ExecuteScalar();
+            }
+        }
+
+        public override DataTable GetDataTableSamples(DataCollection collection, int sampleSize)
+        {
+            using (var conn = Connect(collection.Container.ConnectionString))
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandTimeout = 600;
+                cmd.CommandText = $"SELECT * FROM {collection.Name} LIMIT {sampleSize}";
+
+                var dataTable = new DataTable();
+                var dataAdapter = new MySqlDataAdapter(cmd);
+                dataAdapter.Fill(dataTable);
+                return dataTable;
+            }
+        }
+        #endregion
 
         private DataType ConvertDataType(string dbDataType)
         {
